@@ -5,7 +5,19 @@ import AccuracyChart from './components/AccuracyChart'
 import NewsSidebar from './components/NewsSidebar'
 import { fetchPrediction, fetchNews, fetchSentiment, fetchBars } from './api/client'
 
+const CURRENCY_PAIRS = [
+  { value: 'USDINR', label: 'USD/INR', flag: '🇮🇳' },
+  { value: 'EURUSD', label: 'EUR/USD', flag: '🇪🇺' },
+  { value: 'GBPUSD', label: 'GBP/USD', flag: '🇬🇧' },
+  { value: 'USDJPY', label: 'USD/JPY', flag: '🇯🇵' },
+  { value: 'AUDUSD', label: 'AUD/USD', flag: '🇦🇺' },
+  { value: 'USDCAD', label: 'USD/CAD', flag: '🇨🇦' },
+  { value: 'USDCHF', label: 'USD/CHF', flag: '🇨🇭' },
+  { value: 'NZDUSD', label: 'NZD/USD', flag: '🇳🇿' },
+]
+
 function App() {
+  const [selectedPair, setSelectedPair] = useState('USDINR')
   const [prediction, setPrediction] = useState(null)
   const [news, setNews] = useState([])
   const [sentiment, setSentiment] = useState([])
@@ -19,7 +31,7 @@ function App() {
       setLoading(true)
       
       // Fetch prediction (hybrid)
-      const predData = await fetchPrediction('USDINR', '4h', true)
+      const predData = await fetchPrediction(selectedPair, '4h', true)
       setPrediction(predData)
       
       // Fetch news
@@ -31,7 +43,7 @@ function App() {
       setSentiment(sentimentData)
       
       // Fetch bars for accuracy chart (fetch more for longer time ranges)
-      const barsData = await fetchBars('USDINR', 500)
+      const barsData = await fetchBars(selectedPair, 500)
       setAccuracyData(barsData)
       
       setError(null)
@@ -43,13 +55,13 @@ function App() {
     }
   }
 
-  // Fetch data on mount and every 30 seconds
+  // Fetch data on mount and every 30 seconds, or when pair changes
   useEffect(() => {
     fetchData()
     const interval = setInterval(fetchData, 30000) // Refresh every 30s
 
     return () => clearInterval(interval)
-  }, [])
+  }, [selectedPair])
 
   if (loading && !prediction) {
     return (
@@ -76,6 +88,37 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-900">
       <Header prediction={prediction} />
+      
+      {/* Currency Pair Selector */}
+      <div className="px-6 pt-4 pb-2">
+        <div className="flex items-center space-x-3">
+          <label className="text-sm font-medium text-slate-400">Currency Pair:</label>
+          <div className="relative">
+            <select
+              value={selectedPair}
+              onChange={(e) => setSelectedPair(e.target.value)}
+              className="appearance-none bg-slate-800 text-white px-4 py-2 pr-10 rounded-lg border border-slate-700 hover:border-slate-600 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer font-medium"
+            >
+              {CURRENCY_PAIRS.map((pair) => (
+                <option key={pair.value} value={pair.value}>
+                  {pair.flag} {pair.label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+          {loading && (
+            <div className="flex items-center space-x-2 text-slate-400 text-sm">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              <span>Loading...</span>
+            </div>
+          )}
+        </div>
+      </div>
       
       <div className="flex">
         {/* Main Content - Left Side */}
