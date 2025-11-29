@@ -1,8 +1,32 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
-import { TrendingUp, Target } from 'lucide-react'
-import { format } from 'date-fns'
+import { TrendingUp, Target, Clock } from 'lucide-react'
+import { format, subHours, subDays, subWeeks, subMonths } from 'date-fns'
+import { useState, useMemo } from 'react'
+
+const TIME_RANGES = [
+  { label: '4H', value: '4h', hours: 4 },
+  { label: '1D', value: '1d', hours: 24 },
+  { label: '1W', value: '1w', hours: 168 },
+  { label: '1M', value: '1m', hours: 720 },
+  { label: 'ALL', value: 'all', hours: null },
+]
 
 export default function AccuracyChart({ data, prediction }) {
+  const [selectedRange, setSelectedRange] = useState('4h')
+  // Filter data based on selected time range
+  const filteredData = useMemo(() => {
+    if (!data || data.length === 0) return []
+    
+    const range = TIME_RANGES.find(r => r.value === selectedRange)
+    if (!range || !range.hours) return data // Show all if 'ALL' selected
+    
+    const cutoffTime = subHours(new Date(), range.hours)
+    return data.filter(bar => {
+      const barTime = new Date(bar.ts || bar.timestamp)
+      return barTime >= cutoffTime
+    })
+  }, [data, selectedRange])
+
   if (!data || data.length === 0) {
     return (
       <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
@@ -18,7 +42,7 @@ export default function AccuracyChart({ data, prediction }) {
   }
 
   // Transform data for the chart
-  const chartData = data.map((bar, index) => {
+  const chartData = filteredData.map((bar, index) => {
     const timestamp = new Date(bar.ts || bar.timestamp)
     
     // Calculate predicted price based on current price + expected delta
@@ -47,13 +71,32 @@ export default function AccuracyChart({ data, prediction }) {
   return (
     <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <Target className="w-5 h-5 text-blue-400" />
           <h3 className="text-lg font-semibold text-white">Live vs Predicted Rates</h3>
         </div>
         
-        {/* Accuracy Metrics */}
+        {/* Time Range Selector */}
+        <div className="flex items-center space-x-2 bg-slate-700/50 rounded-lg p-1">
+          {TIME_RANGES.map((range) => (
+            <button
+              key={range.value}
+              onClick={() => setSelectedRange(range.value)}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                selectedRange === range.value
+                  ? 'bg-blue-500 text-white'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-600'
+              }`}
+            >
+              {range.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Accuracy Metrics */}
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-6">
           <div className="text-right">
             <p className="text-xs text-slate-400">Current Rate</p>

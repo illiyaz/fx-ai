@@ -331,6 +331,15 @@ test-ollama:
 insert-sample-news:
 	$(PY) scripts/insert_sample_news.py
 
+backfill-all:
+	$(PY) scripts/backfill_historical_data.py --days 30
+
+backfill-quick:
+	$(PY) scripts/backfill_historical_data.py --days 7
+
+backfill-pair:
+	$(PY) scripts/backfill_historical_data.py --pairs $(PAIR) --days $(DAYS)
+
 # --- Dashboard ---
 
 dashboard-install:

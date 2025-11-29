@@ -293,12 +293,34 @@ class AlphaVantageNewsSource(NewsSource):
 
 # Predefined RSS feeds for major financial news sources
 DEFAULT_RSS_FEEDS = {
+    # Major News Agencies
     "reuters_business": "https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best",
     "bloomberg_markets": "https://www.bloomberg.com/feed/podcast/markets-daily.xml",
+    
+    # FX-Specific
     "forexlive": "https://www.forexlive.com/feed/news",
     "fxstreet": "https://www.fxstreet.com/rss/news",
+    "dailyfx": "https://www.dailyfx.com/feeds/market-news",
+    
+    # Market News
     "investing_forex": "https://www.investing.com/rss/news_285.rss",
+    "investing_economy": "https://www.investing.com/rss/news_95.rss",
     "marketwatch_economy": "https://www.marketwatch.com/rss/economy",
+    "marketwatch_markets": "https://www.marketwatch.com/rss/topstories",
+    
+    # Business News
+    "cnbc_world": "https://www.cnbc.com/id/100727362/device/rss/rss.html",
+    "cnbc_forex": "https://www.cnbc.com/id/10000115/device/rss/rss.html",
+    "ft_markets": "https://www.ft.com/markets?format=rss",
+    
+    # India-Specific
+    "economic_times": "https://economictimes.indiatimes.com/rssfeedstopstories.cms",
+    "moneycontrol": "https://www.moneycontrol.com/rss/latestnews.xml",
+    "business_standard": "https://www.business-standard.com/rss/home_page_top_stories.rss",
+    
+    # Central Banks & Policy
+    "fed_news": "https://www.federalreserve.gov/feeds/press_all.xml",
+    "ecb_press": "https://www.ecb.europa.eu/rss/press.html",
 }
 
 

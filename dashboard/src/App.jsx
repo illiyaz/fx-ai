@@ -13,37 +13,38 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Fetch data function
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      
+      // Fetch prediction (hybrid)
+      const predData = await fetchPrediction('USDINR', '4h', true)
+      setPrediction(predData)
+      
+      // Fetch news
+      const newsData = await fetchNews(10)
+      setNews(newsData)
+      
+      // Fetch sentiment
+      const sentimentData = await fetchSentiment(10)
+      setSentiment(sentimentData)
+      
+      // Fetch bars for accuracy chart (fetch more for longer time ranges)
+      const barsData = await fetchBars('USDINR', 500)
+      setAccuracyData(barsData)
+      
+      setError(null)
+    } catch (err) {
+      console.error('Error fetching data:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Fetch data on mount and every 30 seconds
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        
-        // Fetch prediction (hybrid)
-        const predData = await fetchPrediction('USDINR', '4h', true)
-        setPrediction(predData)
-        
-        // Fetch news
-        const newsData = await fetchNews(10)
-        setNews(newsData)
-        
-        // Fetch sentiment
-        const sentimentData = await fetchSentiment(10)
-        setSentiment(sentimentData)
-        
-        // Fetch bars for accuracy chart
-        const barsData = await fetchBars('USDINR', 50)
-        setAccuracyData(barsData)
-        
-        setError(null)
-      } catch (err) {
-        console.error('Error fetching data:', err)
-        setError(err.message)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchData()
     const interval = setInterval(fetchData, 30000) // Refresh every 30s
 
@@ -95,6 +96,7 @@ function App() {
         <NewsSidebar 
           news={news} 
           sentiment={sentiment}
+          onRefresh={fetchData}
         />
       </div>
     </div>

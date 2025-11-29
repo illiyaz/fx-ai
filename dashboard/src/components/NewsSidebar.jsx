@@ -1,7 +1,10 @@
-import { Newspaper, TrendingUp, AlertCircle, ExternalLink } from 'lucide-react'
+import { Newspaper, TrendingUp, AlertCircle, ExternalLink, RefreshCw, Rss } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
+import { useState } from 'react'
 
-export default function NewsSidebar({ news, sentiment }) {
+export default function NewsSidebar({ news, sentiment, onRefresh }) {
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
   // Merge news with sentiment scores
   const newsWithSentiment = news.map(item => {
     const sentimentScore = sentiment.find(s => s.news_id === item.id)
@@ -13,9 +16,36 @@ export default function NewsSidebar({ news, sentiment }) {
     .sort((a, b) => {
       const impactA = a.sentiment?.impact_score || 0
       const impactB = b.sentiment?.impact_score || 0
+      if (impactA === impactB) {
+        // If same impact, sort by recency
+        return new Date(b.ts || b.timestamp) - new Date(a.ts || a.timestamp)
+      }
       return impactB - impactA
     })
     .slice(0, 10)
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    if (onRefresh) {
+      await onRefresh()
+    }
+    setTimeout(() => setIsRefreshing(false), 1000)
+  }
+
+  const getSourceIcon = (source) => {
+    const icons = {
+      'reuters': '📰',
+      'bloomberg': '💼',
+      'forexlive': '💱',
+      'fxstreet': '📊',
+      'rbi': '🏛️',
+      'fed': '🏦',
+      'ecb': '🇪🇺',
+      'boj': '🇯🇵',
+      'economic_times': '📈',
+    }
+    return icons[source.toLowerCase()] || '📄'
+  }
 
   const getSentimentColor = (score) => {
     if (!score) return 'text-slate-400'
@@ -42,12 +72,22 @@ export default function NewsSidebar({ news, sentiment }) {
     <div className="w-96 bg-slate-800 border-l border-slate-700 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 73px)' }}>
       {/* Header */}
       <div className="sticky top-0 bg-slate-800 border-b border-slate-700 p-4 z-10">
-        <div className="flex items-center space-x-2">
-          <Newspaper className="w-5 h-5 text-blue-400" />
-          <h2 className="text-lg font-semibold text-white">Trending News</h2>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center space-x-2">
+            <Newspaper className="w-5 h-5 text-blue-400" />
+            <h2 className="text-lg font-semibold text-white">Trending News</h2>
+          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="p-2 hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50"
+            title="Refresh news"
+          >
+            <RefreshCw className={`w-4 h-4 text-slate-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
         </div>
-        <p className="text-xs text-slate-400 mt-1">
-          Top {trendingNews.length} news by impact
+        <p className="text-xs text-slate-400">
+          {trendingNews.length > 0 ? `Top ${trendingNews.length} news by impact` : 'No news available'}
         </p>
       </div>
 
@@ -72,6 +112,7 @@ export default function NewsSidebar({ news, sentiment }) {
                 {/* Header */}
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center space-x-2">
+                    <span className="text-lg">{getSourceIcon(item.source)}</span>
                     <span className="text-xs font-semibold text-blue-400 uppercase">
                       {item.source}
                     </span>
@@ -81,7 +122,7 @@ export default function NewsSidebar({ news, sentiment }) {
                       </div>
                     )}
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded ${sentimentBadge.color} text-white`}>
+                  <span className={`text-xs px-2 py-0.5 rounded ${sentimentBadge.color} text-white font-semibold`}>
                     {sentimentBadge.text}
                   </span>
                 </div>
