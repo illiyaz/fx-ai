@@ -1,0 +1,52 @@
+# ----- fx-ai Makefile -----
+# Usage examples:
+#   make up            # start docker stack
+#   make down          # stop stack
+#   make logs          # tail logs
+#   make deps          # install python deps into .venv (if active)
+#   make init-db       # run ClickHouse schema
+#   make run           # up + init-db
+
+COMPOSE := docker compose -f infra/docker/compose.yml
+CH_CONTAINER := fxai-clickhouse
+
+.PHONY: up down restart logs deps init-db cli run
+
+up:
+	$(COMPOSE) up -d
+
+down:
+	$(COMPOSE) down
+
+restart: down up
+
+logs:
+	$(COMPOSE) logs -f --tail=200
+
+# Install Python dependencies into current venv
+# (assumes `.venv` is already activated; otherwise it uses system python)
+deps:
+	@if [ -f requirements.txt ]; then \
+		python -m pip install -U pip && \
+		python -m pip install -r requirements.txt; \
+	else \
+		echo "requirements.txt not found; skipping python deps"; \
+	fi
+
+# Apply ClickHouse schema (multi-statement)
+init-db:
+	@if docker ps --format '{{.Names}}' | grep -q '^$(CH_CONTAINER)$$'; then \
+		docker exec -i $(CH_CONTAINER) clickhouse-client -n < infra/sql/init.sql; \
+		echo "✔ ClickHouse schema applied"; \
+	else \
+		echo "✖ Container $(CH_CONTAINER) not running. Start stack with 'make up' first."; \
+		exit 1; \
+	fi
+
+# Convenience shell inside ClickHouse
+cli:
+	docker exec -it $(CH_CONTAINER) clickhouse-client
+
+# Bring up services and initialize database
+run: up init-db
+	@echo "Stack is up. Redpanda Console: http://localhost:8081  |  ClickHouse HTTP: http://localhost:8123"

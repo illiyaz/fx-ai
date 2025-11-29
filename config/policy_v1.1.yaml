@@ -1,0 +1,10 @@
+embargo:
+  schedule_window_min: 10
+  shock_levels_block: ["high", "critical"]
+posterior_update:
+  news_weight: 0.8
+  shock_penalty: { none: 0.0, caution: 0.15, high: 0.4, critical: 0.8 }
+decision_thresholds:
+  wait:   { prob_min: 0.62, exp_delta_bps_min: 8 }
+  now:    { prob_max: 0.38, exp_delta_bps_min: 8 }
+range_widening_alpha: 0.35

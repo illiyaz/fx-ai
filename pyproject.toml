@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fx-ai"
+version = "0.0.1"
+description = "FX-AI Advisor — MVP"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.2",
+  "structlog>=24.1",
+  "orjson>=3.10",
+  "python-dateutil>=2.9",
+  "pytz>=2024.1",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "pyyaml>=6.0",
+  "clickhouse-connect>=0.7",
+  "aiokafka>=0.10",
+  "httpx>=0.27",
+  "prometheus-client>=0.20",
+  "openai>=1.0",
+  "anthropic>=0.18",
+  "feedparser>=6.0",
+  "beautifulsoup4>=4.12",
+  "lxml>=5.0",
+  "tweepy>=4.14",
+]
+
+[project.optional-dependencies]
+ml = [
+  "lightgbm>=4.3",
+  "scikit-learn>=1.5"
+]
+
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.23",
+  "mypy>=1.10",
+  "ruff>=0.5",
+  "black>=24.4",
+  "isort>=5.13"
+]
+
+[tool.ruff]
+line-length = 100
+select = ["E","F","I","UP","B","C90"]
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+strict_optional = false
+[tool.setuptools]
+packages = []
